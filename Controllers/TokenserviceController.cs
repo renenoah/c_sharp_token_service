@@ -13,6 +13,9 @@ public class TokenserviceController : ControllerBase
     [HttpGet(Name = "GetToken")]
     public Tokenresponse Get(Tokenmessage tm)
     {
+        if(tm.date == "heute"){
+            return new Tokenresponse{token = "date"};
+        }
         return new Tokenresponse{token = "hallo"};
     }
 }
