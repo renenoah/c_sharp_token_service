@@ -15,7 +15,8 @@ public class TokenserviceController : ControllerBase
     {
         try{
             DB db = new();
-            db.getToken(ref tm);
+            string token = db.getToken(ref tm);     
+            return new Tokenresponse{token=token,message="Anlage des Tokens warerfolgreich,"}       ;
         }
         catch(DBException){
             //handle db connection error
