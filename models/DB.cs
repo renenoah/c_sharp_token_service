@@ -5,19 +5,10 @@ using System.Runtime;
 public class DB {
     private const string PATH = "data\\users.db";
     SqliteConnection conn;
-    private void open(){
-        try {
-            var test = string.Format("Data Source={0}",PATH);
-            conn = new SqliteConnection(test);
-            conn.Open();            
-        }
-        catch(SqliteException){
-            throw new DBException();
-        }
-    }
-    //Sanitzing the string for the db
-    private string sanitize_strings(string input){
-        return input.Trim().Remove(';');
+    private void open(){        
+        var test = string.Format("Data Source={0}",PATH);
+        conn = new SqliteConnection(test);
+        conn.Open();  
     }
     private string create_Token(){
         Guid g = Guid.NewGuid();
@@ -33,7 +24,7 @@ public class DB {
         return g.ToString();
 
     }
-    private void check_if_user_exists(ref Tokenmessage tm){
+    private bool check_if_user_exists(ref Tokenmessage tm){
         // string username = sanitize_strings(tm.username);
         // string password = sanitize_strings(tm.password);
 
@@ -48,16 +39,15 @@ public class DB {
         command.Parameters.AddWithValue("$username", tm.username);
         command.Parameters.AddWithValue("$password", tm.password);
         
-        if(command.ExecuteScalar() == null){
-            conn.Close();
-            throw new DBException(causes.NO_USER_IN_DB);
-        }
-        return;
+        return command.ExecuteScalar() != null;
     }
-    public string getToken(ref Tokenmessage tm){
+    public Result<string> getToken(ref Tokenmessage tm){
         //Check if all needed info are there
-        check_if_user_exists(ref tm);
-        return create_Token();
+        if(!check_if_user_exists(ref tm)){
+            conn.Close();
+            return new Result<string>{state=status.NOK,reason=causes.NO_USER_IN_DB};
+        }
+        return new Result<string>{state=status.OK,value=create_Token()};        
     }
 
     private void close(){
